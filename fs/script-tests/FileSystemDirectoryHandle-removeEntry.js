@@ -93,11 +93,35 @@ directory_test(async (t, root) => {
   await createFileWithContents(t, 'file-to-keep', 'abc', root);
 
   const writable = await handle.createWritable();
-  await root.removeEntry('file-to-remove');
-  await promise_rejects_dom(t, 'NotFoundError', getFileContents(handle));
+  await promise_rejects_dom(
+      t, 'NoModificationAllowedError', root.removeEntry('file-to-remove'));
 
   await writable.close();
   assert_array_equals(
       await getSortedDirectoryEntries(root),
       ['file-to-keep', 'file-to-remove']);
-}, 'removeEntry() while the file has an open writable succeeds');
+
+  await root.removeEntry('file-to-remove');
+  assert_array_equals(await getSortedDirectoryEntries(root), ['file-to-keep']);
+}, 'removeEntry() while the file has an open writable fails');
+
+directory_test(async (t, root) => {
+  const dir_name = 'dir-name';
+  const dir = await createDirectory(t, dir_name, root);
+
+  const handle =
+      await createFileWithContents(t, 'file-to-remove', '12345', dir);
+  await createFileWithContents(t, 'file-to-keep', 'abc', dir);
+
+  const writable = await handle.createWritable();
+  await promise_rejects_dom(
+      t, 'NoModificationAllowedError', root.removeEntry(dir_name));
+
+  await writable.close();
+  assert_array_equals(
+      await getSortedDirectoryEntries(dir_name),
+      ['file-to-keep', 'file-to-remove']);
+
+  await dir.removeEntry('file-to-remove');
+  assert_array_equals(await getSortedDirectoryEntries(dir), ['file-to-keep']);
+}, 'removeEntry() of a directory while a containing file has an open writable fails');
