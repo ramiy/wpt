@@ -302,7 +302,7 @@ async function pressKey(element, key) {
 
 // The testdriver.js, testdriver-vendor.js and testdriver-actions.js need to be
 // included to use this function.
-function addListenersAndTap(element, events) {
+function addListenersAndTap(element, events = ['pointerdown', 'pointerup']) {
   addListeners(element, events);
   return tap(element);
 }
