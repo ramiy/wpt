@@ -240,7 +240,13 @@ promise_test(t => {
         reject("Cache not visible in same-top-level-site worker");
       }
 
-      await send(worker_2_uuid, "self.registration.unregister();");
+      // Wait to unregister the first service worker until the end of
+      // the test since otherwise this seems to occasionally cause
+      // the service worker created below to not execute the test code
+      // and not respond with a result (at least in the case where
+      // storage is unpartitioned).
+      t.add_cleanup(() =>
+        send(worker_2_uuid, "self.registration.unregister();"));
 
       // Create a service worker in the cross-top-level-site iframe. Note that
       // if service workers are unpartitioned then this new service worker would
@@ -255,7 +261,9 @@ promise_test(t => {
         reject("Cache visible in not-same-top-level-site worker");
       }
 
-      await send(worker_1_uuid, "self.registration.unregister();");
+      t.add_cleanup(() =>
+        send(worker_1_uuid, "self.registration.unregister();"));
+
       resolve();
     } catch (e) {
       reject(e);
