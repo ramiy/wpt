@@ -5,8 +5,13 @@ from json import dumps, loads
 def main(request, response):
     key = request.GET.first(b"key").decode("utf8")
     mode = request.GET.first(b"mode", "content")
+    status = int(request.GET.first(b"status", b"200"))
     stash = request.server.stash
-    response.headers.set(b"Access-Control-Allow-Origin", b"*")
+    cors = request.GET.first(b"cors", "true")
+    if cors == "true" or mode == b"info":
+        response.headers.set(b"Access-Control-Allow-Origin", b"*")
+
+    response.status = status
     with stash.lock:
         requests = loads(stash.take(key) or '[]')
         if mode == b"info":
@@ -23,10 +28,10 @@ def main(request, response):
             requests.append({"headers": headers, "url": request.url})
             stash.put(key, dumps(requests))
 
-    response.headers.set(b"Content-Type", request.GET.first(b"type"))
+    response.headers.set(b"Content-Type", request.GET.first(b"type", "text/plain"))
     response.headers.set(b"Cache-Control", request.GET.first(b"cache-control", b"max-age: 604800"))
     if b"file" in request.GET:
         path = os.path.join(os.path.dirname(isomorphic_encode(__file__)), request.GET.first(b"file"));
         response.content = open(path, mode=u'rb').read()
     else:
-        return request.GET.first(b"content")
+        return request.GET.first(b"content", "123")
