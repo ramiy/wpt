@@ -5,7 +5,7 @@ steps:
     pathtoPublish: /Users/runner/Library/Logs/com.apple.WebDriver/
     artifactName: safaridriver-logs
   condition: eq(variables['safaridriver_diagnose'], true)
-- script:
+- script: |
     mkdir -p /Users/runner/sysdiagnose
     sudo sysdiagnose -u -f /Users/runner/sysdiagnose -b Safari
   displayName: 'Collect sysdiagnose'
