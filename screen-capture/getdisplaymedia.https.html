@@ -218,4 +218,14 @@ promise_test(async t => {
     }, property + " is supported");
   });
 }
+
+promise_test(async t => {
+  const stream = await getDisplayMedia({video: true});
+  t.add_cleanup(() => stopTracks(stream));
+  const capabilities = stream.getVideoTracks()[0].getCapabilities();
+  assert_any(
+      assert_equals, capabilities.displaySurface,
+      ['monitor', 'window', 'browser']);
+}, 'getDisplayMedia() with getCapabilities');
+
 </script>
