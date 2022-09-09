@@ -25,7 +25,7 @@ trigger:
 # Set safaridriver_diagnose to true to enable safaridriver diagnostics. The
 # logs won't appear in `./wpt run` output but will be uploaded as an artifact.
 variables:
-  safaridriver_diagnose: false
+  safaridriver_diagnose: true
 
 jobs:
 # The affected tests jobs are unconditional for speed, as most PRs have one or
