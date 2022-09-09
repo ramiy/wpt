@@ -5,11 +5,14 @@ steps:
     pathtoPublish: /Users/runner/Library/Logs/com.apple.WebDriver/
     artifactName: safaridriver-logs
   condition: eq(variables['safaridriver_diagnose'], true)
-- script: sudo sysdiagnose -u -f /Users/runner -A sysdiagnose.tar.gz -b Safari
+- script:
+    mkdir -p /Users/runner/sysdiagnose
+    sudo sysdiagnose -u -f /Users/runner/sysdiagnose -b Safari
+  displayName: 'Collect sysdiagnose'
   condition: eq(variables['safaridriver_diagnose'], true)
 - task: PublishBuildArtifacts@1
   displayName: 'Publish sysdiagnose'
   inputs:
-    pathtoPublish: /Users/runner/sysdiagnose.tar.gz
+    pathtoPublish: /Users/runner/sysdiagnose/
     artifactName: sysdiagnose
   condition: eq(variables['safaridriver_diagnose'], true)
