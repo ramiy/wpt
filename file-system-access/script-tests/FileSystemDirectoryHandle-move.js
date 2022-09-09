@@ -50,15 +50,14 @@ directory_test(async (t, root) => {
   const dir_dest = await root.getDirectoryHandle('dir-dest', {create: true});
   const dir_in_dir =
       await dir_src.getDirectoryHandle('dir-in-dir', {create: true});
-  await dir_in_dir.move(dir_dest, "");
+  await dir_in_dir.move(dir_dest, '');
+
+  await promise_rejects_js(t, TypeError, dir_in_dir.move(dir_dest, ''));
 
   assert_array_equals(
-      await getSortedDirectoryEntries(root), ['dir-dest/', 'dir-src/']);
-  assert_array_equals(await getSortedDirectoryEntries(dir_src), []);
-  assert_array_equals(
-      await getSortedDirectoryEntries(dir_dest), ['dir-in-dir/']);
-  assert_array_equals(await getSortedDirectoryEntries(dir_in_dir), []);
-}, 'move(dir, "") to move an empty directory to a new directory');
+      await getSortedDirectoryEntries(dir_src), ['dir-before/']);
+  assert_array_equals(await getSortedDirectoryEntries(dir_dest), []);
+}, 'move(dir, "") to move a directory to a new directory fails');
 
 directory_test(async (t, root) => {
   const dir_src = await root.getDirectoryHandle('dir-src', {create: true});
@@ -74,26 +73,6 @@ directory_test(async (t, root) => {
       await getSortedDirectoryEntries(dir_dest), ['dir-in-dir/']);
   assert_array_equals(await getSortedDirectoryEntries(dir_in_dir), []);
 }, 'move(dir, name) to move an empty directory to a new directory');
-
-directory_test(async (t, root) => {
-  const dir_src = await root.getDirectoryHandle('dir-src', {create: true});
-  const dir_dest = await root.getDirectoryHandle('dir-dest', {create: true});
-  const dir_in_dir =
-      await dir_src.getDirectoryHandle('dir-in-dir', {create: true});
-  const file =
-      await createFileWithContents(t, 'file-in-dir', 'abc', dir_in_dir);
-  await dir_in_dir.move(dir_dest, "");
-
-  assert_array_equals(
-      await getSortedDirectoryEntries(root), ['dir-dest/', 'dir-src/']);
-  assert_array_equals(await getSortedDirectoryEntries(dir_src), []);
-  assert_array_equals(
-      await getSortedDirectoryEntries(dir_dest), ['dir-in-dir/']);
-  assert_array_equals(
-      await getSortedDirectoryEntries(dir_in_dir), ['file-in-dir']);
-  // `file` should be invalidated after moving directories.
-  await promise_rejects_dom(t, 'NotFoundError', getFileContents(file));
-}, 'move(dir, "") to move a non-empty directory to a new directory');
 
 directory_test(async (t, root) => {
   const dir_src = await root.getDirectoryHandle('dir-src', {create: true});
@@ -141,33 +120,6 @@ directory_test(async (t, root) => {
   assert_array_equals(await getSortedDirectoryEntries(dir2), []);
   assert_equals(await getFileContents(handle), 'foo');
 }, 'move(dir) can be called multiple times');
-
-directory_test(async (t, root) => {
-  const dir1 = await root.getDirectoryHandle('dir1', {create: true});
-  const dir2 = await root.getDirectoryHandle('dir2', {create: true});
-  const handle = await createFileWithContents(t, 'file', 'foo', root);
-
-  await handle.move(dir1, "");
-  assert_array_equals(
-      await getSortedDirectoryEntries(root), ['dir1/', 'dir2/']);
-  assert_array_equals(await getSortedDirectoryEntries(dir1), ['file']);
-  assert_array_equals(await getSortedDirectoryEntries(dir2), []);
-  assert_equals(await getFileContents(handle), 'foo');
-
-  await handle.move(dir2, "");
-  assert_array_equals(
-      await getSortedDirectoryEntries(root), ['dir1/', 'dir2/']);
-  assert_array_equals(await getSortedDirectoryEntries(dir1), []);
-  assert_array_equals(await getSortedDirectoryEntries(dir2), ['file']);
-  assert_equals(await getFileContents(handle), 'foo');
-
-  await handle.move(root, "");
-  assert_array_equals(
-      await getSortedDirectoryEntries(root), ['dir1/', 'dir2/', 'file']);
-  assert_array_equals(await getSortedDirectoryEntries(dir1), []);
-  assert_array_equals(await getSortedDirectoryEntries(dir2), []);
-  assert_equals(await getFileContents(handle), 'foo');
-}, 'move(dir, "") can be called multiple times');
 
 directory_test(async (t, root) => {
   const dir1 = await root.getDirectoryHandle('dir1', {create: true});
