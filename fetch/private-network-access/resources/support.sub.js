@@ -32,39 +32,73 @@ function futureMessage() {
   });
 };
 
+// Maps protocol (without the trailing colon) and address space to port.
+const SERVER_PORTS = {
+  "http": {
+    "local": {{ports[http][0]}},
+    "private": {{ports[http-private][0]}},
+    "public": {{ports[http-public][0]}},
+  },
+  "https": {
+    "local": {{ports[https][0]}},
+    "private": {{ports[https-private][0]}},
+    "public": {{ports[https-public][0]}},
+  },
+  "ws": {
+    "local": {{ports[ws][0]}},
+  },
+  "wss": {
+    "local": {{ports[wss][0]}},
+  },
+};
+
+// See `Server.get()`.
+//
+// This is defined before `Server` as an implementation detail.
+function getServer(protocol, addressSpace) {
+  const ports = SERVER_PORTS[protocol];
+  if (ports === undefined) {
+    return null;
+  }
+
+  const port = ports[addressSpace];
+  if (port === undefined) {
+    return null;
+  }
+
+  return {
+    addressSpace,
+    name: `${protocol}-${addressSpace}`,
+    port,
+    protocol: protocol + ':',
+  };
+}
+
+// A `Server` is a web server accessible by tests. It has the following shape:
+//
+// {
+//   addressSpace: the IP address space of the server ("local", "private" or
+//     "public"),
+//   name: a human-readable name for the server,
+//   port: the port on which the server listens for connections,
+//   protocol: the protocol (including trailing colon) spoken by the server,
+// }
+//
+// Constants below define the available servers, which can also be accessed
+// programmatically with `get()`.
 const Server = {
-  HTTP_LOCAL: {
-    port: {{ports[http][0]}},
-    protocol: "http:",
-  },
-  HTTP_PRIVATE: {
-    port: {{ports[http-private][0]}},
-    protocol: "http:",
-  },
-  HTTP_PUBLIC: {
-    port: {{ports[http-public][0]}},
-    protocol: "http:",
-  },
-  HTTPS_LOCAL: {
-    port: {{ports[https][0]}},
-    protocol: "https:",
-  },
-  HTTPS_PRIVATE: {
-    port: {{ports[https-private][0]}},
-    protocol: "https:",
-  },
-  HTTPS_PUBLIC: {
-    port: {{ports[https-public][0]}},
-    protocol: "https:",
-  },
-  WS_LOCAL: {
-    port: {{ports[ws][0]}},
-    protocol: "ws:",
-  },
-  WSS_LOCAL: {
-    port: {{ports[wss][0]}},
-    protocol: "wss:",
-  },
+  // Maps the given `protocol` (without a trailing colon) and `addressSpace` to
+  // a server. Returns null if no such server exists.
+  get: getServer,
+
+  HTTP_LOCAL: getServer("http", "local"),
+  HTTP_PRIVATE: getServer("http", "private"),
+  HTTP_PUBLIC: getServer("http", "public"),
+  HTTPS_LOCAL: getServer("https", "local"),
+  HTTPS_PRIVATE: getServer("https", "private"),
+  HTTPS_PUBLIC: getServer("https", "public"),
+  WS_LOCAL: getServer("ws", "local"),
+  WSS_LOCAL: getServer("wss", "local"),
 };
 
 // Resolves a URL relative to the current location, returning an absolute URL.
