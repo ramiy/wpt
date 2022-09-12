@@ -13,7 +13,7 @@ function CreateViewTimelineOpacityAnimation(test, target,
             fill: 'none'
           });
   test.add_cleanup(() => {
-    // anim.cancel();
+    anim.cancel();
   });
   return anim;
 }

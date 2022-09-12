@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html id="top">
+<meta charset="utf-8">
+<title>View timeline delay</title>
+<link rel="help" href="https://drafts.csswg.org/scroll-animations-1/#viewtimeline-interface">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/web-animations/testcommon.js"></script>
+<script src="/scroll-animations/scroll-timelines/testcommon.js"></script>
+<script src="/scroll-animations/view-timelines/testcommon.js"></script>
+<style>
+  #container {
+    border:  10px solid lightgray;
+    overflow-x: scroll;
+    height:  200px;
+    width: 200px;
+  }
+  #content {
+    display:  flex;
+    flex-flow:  row nowrap;
+    justify-content:  flex-start;
+    width:  1800px;
+    margin: 0;
+  }
+  .spacer {
+    width:  800px;
+    display:  inline-block;
+  }
+  #target {
+    background-color:  green;
+    height:  100px;
+    width:  100px;
+    display:  inline-block;
+  }
+</style>
+<body>
+  <div id="container">
+    <div id="content">
+      <div class="spacer"></div>
+      <div id="target"></div>
+      <div class="spacer"></div>
+    </div>
+  </div>
+</body>
+<script type="text/javascript">
+
+  async function runTest(t, options) {
+    container.scrollLeft = 0;
+    await waitForNextFrame();
+
+    const anim = CreateViewTimelineOpacityAnimation(t, target, 'inline');
+    anim.effect.updateTiming({
+      delay: options.delay,
+      endDelay: options.endDelay,
+      // Set fill to accommodate floating point precision errors at the
+      // endpoints.
+      fill: 'both'
+    });
+    const timeline = anim.timeline;
+    await anim.ready;
+
+    // Advance to the start offset, which triggers entry to the active phase.
+    container.scrollLeft = options.rangeStart;
+    await waitForNextFrame();
+    const range = `${options.delay} to ${options.endDelay}`;
+    assert_equals(getComputedStyle(target).opacity, '0.3',
+                  `Effect at the start of the active phase: ${range}`);
+
+    // Advance to the midpoint of the animation.
+    container.scrollLeft = (options.rangeStart + options.rangeEnd) / 2;
+    await waitForNextFrame();
+    assert_equals(getComputedStyle(target).opacity,'0.5',
+                  `Effect at the midpoint of the active range: ${range}`);
+
+    // Advance to the end of the animation.
+    container.scrollLeft = options.rangeEnd;
+    await waitForNextFrame();
+    assert_equals(getComputedStyle(target).opacity, '0.7',
+                  `Effect is in the active phase at effect end time: ${range}`);
+  }
+
+  promise_test(async t => {
+    await runTest(t, {
+      delay: { phase: 'cover', percent: CSS.percent(0) } ,
+      endDelay: { phase: 'cover', percent: CSS.percent(100) },
+      rangeStart: 600,
+      rangeEnd: 900
+    });
+    await runTest(t, {
+      delay: { phase: 'contain', percent: CSS.percent(0) } ,
+      endDelay: { phase: 'contain', percent: CSS.percent(100) },
+      rangeStart: 700,
+      rangeEnd: 800
+    });
+    await runTest(t, {
+      delay: { phase: 'enter', percent: CSS.percent(0) },
+      endDelay: { phase: 'enter', percent: CSS.percent(100) },
+      rangeStart: 600,
+      rangeEnd: 700
+    });
+    await runTest(t, {
+      delay:  { phase: 'exit', percent: CSS.percent(0) },
+      endDelay: { phase: 'exit', percent: CSS.percent(100) },
+      rangeStart: 800,
+      rangeEnd: 900
+    });
+    await runTest(t, {
+      delay: { phase: 'contain', percent: CSS.percent(-50) },
+      endDelay: { phase: 'enter', percent: CSS.percent(200) },
+      rangeStart: 650,
+      rangeEnd: 800
+    });
+    await runTest(t, {
+      delay: { phase: 'enter' },
+      endDelay: { phase: 'exit' },
+      rangeStart: 600,
+      rangeEnd: 900
+    });
+    await runTest(t, {
+      delay: { percent: CSS.percent(0) },
+      endDelay: { percent: CSS.percent(100) },
+      rangeStart: 600,
+      rangeEnd: 900
+    });
+
+  }, 'View timeline with range set via delays.' );
+</script>
