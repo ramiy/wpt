@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+
+<head>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+</head>
+
+<body>
+  <p>This tests that an iframe with no user activation and no sandbox flags set,
+    when embedding a page with allow-top-navigation set in its header, has the
+    flag ignored and disallows top-level navigation. This also tests that
+    enforcement will happen through a frame navigating itself.</p>
+  <iframe></iframe>
+  <script>
+    async_test(t => {
+      window.addEventListener("message", t.step_func_done(e => {
+        assert_equals(e.data, "BLOCKED",
+            "The iframe should not have navigated top.");
+      }));
+
+      document.querySelector("iframe").src = "http://{{hosts[alt][www]}}:{{ports[http][1]}}/html/semantics/embedded-content/the-iframe-element/resources/top-navigation-with-sandbox-flags-redirect.html";
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<head>
+<script src="/resources/testdriver.js"></script>
+<script src="/resources/testdriver-vendor.js"></script>
+<script>
+
+window.addEventListener('message', async function handler(evt) {
+    window.removeEventListener('message', handler);
+
+    test_driver.set_test_context(window.parent);
+    await test_driver.bless('user activation');
+
+    try {
+        parent.location = "navigation-changed-iframe.html";
+    } catch(err) {
+        parent.postMessage("parent.location failed", '*');
+    }
+});
+
+// Now let our parent know that we are ready to go.
+window.parent.postMessage("Loaded", '*');
+</script>
+</head>
+<body>
+    <h4>DOMAIN</h4>
+</body>
+</html>

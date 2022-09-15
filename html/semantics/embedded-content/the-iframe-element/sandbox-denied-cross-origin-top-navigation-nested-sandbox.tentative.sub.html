@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+
+<head>
+  <style>
+    iframe {
+      width: 400px;
+      height: 200px;
+    }
+  </style>
+  <script src="/resources/testharness.js"></script>
+  <script src="/resources/testharnessreport.js"></script>
+</head>
+
+<body>
+  <p>This tests that an iframe in a nested sandbox with 'allow-top-navigation'
+    can't navigate the top level page if its ancestor can't.</p>
+  <iframe></iframe>
+  <script>
+    async_test(t => {
+      window.addEventListener("message", t.step_func_done(e => {
+        assert_equals(e.data, "PASS",
+            "top.location should throw an exception");
+      }));
+
+      document.querySelector("iframe").src = "http://{{hosts[alt][www]}}:{{ports[http][1]}}/html/semantics/embedded-content/the-iframe-element/resources/cross-iframe-that-performs-top-navigation-in-nested-sandboxed-frame.html";
+    });
+  </script>
+</body>
+
+</html>

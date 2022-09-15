@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+
+<body>
+  If the navigation fails, this text should appear.
+  <script>
+    window.onload = function () {
+      try {
+        top.location = "navigation-changed-iframe.html";
+        top.postMessage("LOADED", "*");
+      } catch (e) {
+        top.postMessage("BLOCKED", "*");
+      }
+    }
+  </script>
+</body>
+
+</html>

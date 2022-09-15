@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+
+<head>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+</head>
+
+<body>
+  <p>This tests that an iframe with sandbox flags set that embeds a page with
+    allow-top-navigation set in its header honors the header and allow-scripts
+    a top-level navigation.</p>
+  <iframe sandbox="allow-scripts allow-top-navigation"></iframe>
+  <script>
+    async_test(t => {
+      window.addEventListener("message", t.step_func_done(e => {
+        assert_equals(e.data, "LOADED",
+            "The iframe should have successfully navigated top.");
+      }));
+
+      document.querySelector("iframe").src = "http://{{hosts[alt][www]}}:{{ports[http][1]}}/html/semantics/embedded-content/the-iframe-element/resources/top-navigation-with-sandbox-flags-redirect.html";
+    });
+  </script>
+</body>
+
+</html>
