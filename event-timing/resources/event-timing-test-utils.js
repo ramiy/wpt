@@ -168,6 +168,10 @@ function applyAction(eventType, target) {
       || eventType === 'pointerleave' || eventType === 'pointerout') {
     actions.pointerMove(0, 0, {origin: target})
     .pointerMove(0, 0);
+  } else if (eventType === 'keyup' || eventType === 'keydown') {
+    // Any key here as an input should work.
+    const key = 'k';
+    return test_driver.send_keys(target, key);
   } else {
     assert_unreached('The event type ' + eventType + ' is not supported.');
   }
@@ -182,7 +186,9 @@ function requiresListener(eventType) {
           'pointerleave',
           'pointerout',
           'pointerover',
-          'pointerup'
+          'pointerup',
+          'keyup',
+          'keydown'
         ].includes(eventType);
 }
 
